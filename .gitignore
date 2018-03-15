@@ -3,3 +3,5 @@
 ################################################################################
 
 /.vs/EasyCompiler2/v15/Server/sqlite3
+/EasyCompiler2/bin/Debug
+/EasyCompiler2/obj
