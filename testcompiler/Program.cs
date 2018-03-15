@@ -54,20 +54,24 @@ namespace testcompiler
            // ec.UseCodedom();
             ec.MethodToInvoke = "Main";
             ec.AddAssemblyLocation("System.Windows.Forms");
+            Console.WriteLine("Attempting to Compile the source");
             if (ec.Compile())
             {
                 ec.ParameterstoPass = new string[] { "Let's get started" };
+                Console.WriteLine("Launching assmebly with first input: ");
                 ec.LaunchCompiledAssembly();
                 ec.MethodToInvoke = "Add";
                 ec.ParameterstoPass = new object[] { 1, 2 };
+                Console.WriteLine("Accessing Add Method in assembly");
                 object result = ec.LaunchCompiledAssembly();
                 Type t = result.GetType();
                 if (t.Equals(typeof(int)))
                 {
                     Console.WriteLine(result);
                 }
+                Console.Write("Accessing number of any compile errors so far: ");
                 Console.WriteLine(ec.ErrorCount);
-
+                Console.WriteLine("Listing and Searching Methods of Assembly:");
                 // Search through all methods in Assembly
                 Assembly assem = ec.CompiledAssembly;
                 Type[] ty = assem.GetTypes();
@@ -83,6 +87,7 @@ namespace testcompiler
                             thisone = tp; // finds the type the method belongs to
                     }
                 }
+                Console.Write("The class with the method targeted inside:");
                 Console.WriteLine(thisone.Name);
                 if (ec.ErrorCount == 0)
                 {
@@ -98,26 +103,41 @@ namespace testcompiler
                     Console.WriteLine(e.ToString());
             }
             ec.MethodToInvoke = "Add";
+            Console.WriteLine("Using Add Method with Namespace.Class.Nethod supplied");
             object answer = ec.Invoke("HelloWorld.Hello.Add", new object[] { 5, 2 });
             Console.WriteLine(answer);
             ec.InstanceToCreate = "";
-            ec.Namespace = "";        
+            ec.Namespace = "";
+            Console.WriteLine("Using Add Method with just Method name supplied");
             answer = ec.Invoke(new object[] { 9, 45 });
             Console.WriteLine(answer);
-             ec.InstanceToCreate = "Hello";              
+             ec.InstanceToCreate = "Hello";
+            Console.WriteLine("Using Add Method with just class and method names supplied ");
             answer = ec.Invoke(new object[] { 5, 25 });
             Console.WriteLine(answer);
             // check with bad input
             answer = ec.Invoke(new object[] { 2 });
-            Console.WriteLine("Should be error:");
+            Console.WriteLine("Should be error with not enough paramters:");
             if (ec.Success)
                 Console.WriteLine(answer);
             else
                 foreach (var e in (List<string>)answer)
                     Console.WriteLine(e);
+            Console.WriteLine("Using Add with everything supplied separately");
             ec.Namespace = "HelloWorld";
             answer = ec.Invoke(new object[] { 15, 2 });
             Console.WriteLine(answer);
+            ec.Namespace = "";
+            ec.InstanceToCreate = "";
+            Console.WriteLine("Find with methods inside easycompile:");
+            if (ec.FindClass(ec.MethodToInvoke, out string instance))
+            {
+                ec.InstanceToCreate = instance;
+                answer = ec.Invoke(new object[] { 7, 13 });
+                Console.WriteLine(answer);
+            }
+            else
+                Console.WriteLine("Failed to find with inside ec");
 
         }
     }

@@ -223,6 +223,35 @@ namespace EasyCompiler2
                         evaluator = evaluator.ReferenceAssemblyByNamespace(assem);
                 }
         }
+        /// <summary>
+        /// An attempt to write an Async method for compiling and running
+        /// </summary>
+        /// <returns></returns>
+        public async Task<object> CompileRunAsync()
+        {
+            return await Task.Factory.StartNew(() => CompileRun());
+        }
+        /// <summary>
+        /// An attempt to write an Async method for compiling and running
+        /// </summary>
+        /// <returns></returns>
+        public async Task<object> CompileRunAsync(string SourcetoCompile)
+        {
+            return await Task.Factory.StartNew(() => CompileRun(SourcetoCompile));
+        }
+        public object CompileRun()
+        {
+            return CompileRun(BuildSource());
+        }
+        public object CompileRun(string SourcetoCompile)
+        {
+            if (Compile(SourcetoCompile))
+            {
+                return LaunchCompiledAssembly();
+            }
+            else
+                return Errors;
+        }
         public bool Compile()
         {
             string SourcetoCompile = BuildSource();
@@ -325,12 +354,10 @@ namespace EasyCompiler2
             Type[] ty = assem.GetTypes();
             Type thisone = ty[0];
             foreach (var tp in ty)
-            {
-                Console.WriteLine(tp.Name);
+            {                
                 MethodInfo[] methods = tp.GetMethods();
                 foreach (var m in methods)
-                {
-                    Console.WriteLine($"Method:{m.Name}");
+                {                    
                     if (m.Name.Equals(methodname))
                     {
                         ClassName = tp.Name;
