@@ -1,0 +1,12 @@
+{
+  "User": {
+    "Id": 1727883,
+    "Username": "glctig",
+    "Name": "Gary Cole",
+    "Email": "glctig@gmail.com",
+    "AvatarUrl": "https://secure.gravatar.com/avatar/7f44626fab64a8891bac10c85688d299?s=80&d=identicon",
+    "PrivateToken": "N9kJGFj2fGxfE1KuF6AU",
+    "Host": "https://gitlab.com",
+    "TwoFactorEnabled": false
+  }
+}
