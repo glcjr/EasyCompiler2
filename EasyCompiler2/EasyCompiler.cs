@@ -292,14 +292,20 @@ namespace EasyCompiler2
         }
         protected string FindNameSpace()
         {
-            Assembly assem = _CompiledAssembly;
-            Type[] types = assem.GetTypes();
-            foreach (var t in types)
+            if (FindNameSpace(InstanceToCreate, out string NamespaceName))
             {
-                if (t.Name.Equals(InstanceToCreate))
-                    return $"{t.Namespace}.";
+                return $"{NamespaceName}.";
             }
-            return "";
+            else
+                return "";
+            //Assembly assem = _CompiledAssembly;
+            //Type[] types = assem.GetTypes();
+            //foreach (var t in types)
+            //{
+            //    if (t.Name.Equals(InstanceToCreate))
+            //        return $"{t.Namespace}.";
+            //}
+            //return "";
         }
         protected string BuildInvoker()
         {
@@ -311,6 +317,78 @@ namespace EasyCompiler2
             else
                 NS = $"{NS}.";
             return $"{NS}{StarOrValue(InstanceToCreate)}.{StarOrValue(MethodToInvoke)}";
+        }
+        public bool FindClass(string methodname, out string ClassName)
+        {
+            ClassName = "";
+            Assembly assem = _CompiledAssembly;
+            Type[] ty = assem.GetTypes();
+            Type thisone = ty[0];
+            foreach (var tp in ty)
+            {
+                Console.WriteLine(tp.Name);
+                MethodInfo[] methods = tp.GetMethods();
+                foreach (var m in methods)
+                {
+                    Console.WriteLine($"Method:{m.Name}");
+                    if (m.Name.Equals(methodname))
+                    {
+                        ClassName = tp.Name;
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+        public bool FindAllClasses(string methodname, out List<string> ClassNames)
+        {
+            ClassNames = new List<string>();
+            Assembly assem = _CompiledAssembly;
+            Type[] ty = assem.GetTypes();
+            Type thisone = ty[0];
+            foreach (var tp in ty)
+            {
+                Console.WriteLine(tp.Name);
+                MethodInfo[] methods = tp.GetMethods();
+                foreach (var m in methods)
+                {
+                    Console.WriteLine($"Method:{m.Name}");
+                    if (m.Name.Equals(methodname))
+                    {
+                        ClassNames.Add(tp.Name);                       
+                    }
+                }
+            }
+            return ClassNames.Count > 0;
+        }
+        public bool FindNameSpace(string classname, out string NamespaceName)
+        {
+            Assembly assem = _CompiledAssembly;
+            NamespaceName = "";
+            Type[] types = assem.GetTypes();
+            foreach (var t in types)
+            {
+                if (t.Name.Equals(classname))
+                {
+                    NamespaceName = t.Namespace;
+                    return true;
+                }
+            }
+            return false;
+        }
+        public bool FindAllNameSpaces(string classname, out List<string> NamespaceNames)
+        {
+            NamespaceNames = new List<string>();
+            Assembly assem = _CompiledAssembly;            
+            Type[] types = assem.GetTypes();
+            foreach (var t in types)
+            {
+                if (t.Name.Equals(classname))
+                {
+                    NamespaceNames.Add(t.Namespace);                    
+                }
+            }
+            return NamespaceNames.Count > 0;
         }
         public object Invoke(params object[] list)
         {
@@ -363,7 +441,6 @@ namespace EasyCompiler2
                 bool found = false;
                 if (InstanceToCreate != string.Empty)
                 {
-
                     foreach (var t in Types)
                     {
                         if (t.Name.Equals(InstanceToCreate))

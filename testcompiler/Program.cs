@@ -67,6 +67,8 @@ namespace testcompiler
                     Console.WriteLine(result);
                 }
                 Console.WriteLine(ec.ErrorCount);
+
+                // Search through all methods in Assembly
                 Assembly assem = ec.CompiledAssembly;
                 Type[] ty = assem.GetTypes();
                 Type thisone = ty[0];
@@ -78,7 +80,7 @@ namespace testcompiler
                     {
                         Console.WriteLine($"Method:{m.Name}");
                         if (m.Name.Equals(ec.MethodToInvoke))
-                            thisone = tp;
+                            thisone = tp; // finds the type the method belongs to
                     }
                 }
                 Console.WriteLine(thisone.Name);
@@ -98,11 +100,24 @@ namespace testcompiler
             ec.MethodToInvoke = "Add";
             object answer = ec.Invoke("HelloWorld.Hello.Add", new object[] { 5, 2 });
             Console.WriteLine(answer);
-            ec.InstanceToCreate = "Hello";
-            //  ec.Namespace = "HelloWorld";
+            ec.InstanceToCreate = "";
+            ec.Namespace = "";        
             answer = ec.Invoke(new object[] { 9, 45 });
             Console.WriteLine(answer);
-
+             ec.InstanceToCreate = "Hello";              
+            answer = ec.Invoke(new object[] { 5, 25 });
+            Console.WriteLine(answer);
+            // check with bad input
+            answer = ec.Invoke(new object[] { 2 });
+            Console.WriteLine("Should be error:");
+            if (ec.Success)
+                Console.WriteLine(answer);
+            else
+                foreach (var e in (List<string>)answer)
+                    Console.WriteLine(e);
+            ec.Namespace = "HelloWorld";
+            answer = ec.Invoke(new object[] { 15, 2 });
+            Console.WriteLine(answer);
 
         }
     }
