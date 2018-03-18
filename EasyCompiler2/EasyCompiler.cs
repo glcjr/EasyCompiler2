@@ -51,9 +51,9 @@ namespace EasyCompiler2
     public class EasyCompiler
     {
         
-        protected IEvaluator evaluator = CSScript.Evaluator;
+        public IEvaluator evaluator = CSScript.Evaluator;
         protected Assembly _CompiledAssembly = null;
-
+        protected bool UseExplictIncludeofReferences = false;
         public List<string> Assemblies { get; set; } = new List<string>();
         public List<string> SourceStrings { get; set; } = new List<string>();
         public List<string> SourceFiles { get; set; } = new List<string>();
@@ -62,6 +62,7 @@ namespace EasyCompiler2
         public string Namespace { get; set; } = "";
         public string MethodToInvoke { get; set; } = "";
         public object[] ParameterstoPass { get; set; } = null;
+        
         public Assembly CompiledAssembly
         {
             get
@@ -87,6 +88,7 @@ namespace EasyCompiler2
         public EasyCompiler()
         {
             CSScript.KeepCompilingHistory = true;
+          
         }
         public void AddAssemblyLocations(params string[] assemblies)
         {
@@ -100,6 +102,10 @@ namespace EasyCompiler2
             if (Assemblies.Contains(assembly))
                 Assemblies.Remove(assembly);
             Assemblies.Add(assembly);
+        }
+        public void SetToIncludeReferencesFromCode()
+        {
+            UseExplictIncludeofReferences = true;
         }
         public void UseRosyln()
         {
@@ -259,11 +265,13 @@ namespace EasyCompiler2
         }
         public bool Compile(string SourcetoCompile)
         {
-
-            evaluator = evaluator.ReferenceAssemblyOf(this);
-            //evaluator.ReferenceAssemblyOf<string>();
-            evaluator = evaluator.ReferenceAssembliesFromCode(SourcetoCompile);
-            evaluator = evaluator.ReferenceDomainAssemblies();
+            if (UseExplictIncludeofReferences)
+            {
+                evaluator = evaluator.ReferenceAssemblyOf(this);
+                //evaluator.ReferenceAssemblyOf<string>();
+                evaluator = evaluator.ReferenceAssembliesFromCode(SourcetoCompile);
+                evaluator = evaluator.ReferenceDomainAssemblies();
+            }
             GetAssemblies();
             //  CompiledAssembly = CSScript.Evaluator.CompileCode(SourcetoCompile);
 
@@ -280,10 +288,7 @@ namespace EasyCompiler2
                 Errors.Add(SourcetoCompile);
 
             }
-            catch (Exception e)
-            {
-                Errors.Add(e.Message);                
-            }
+           
             //CSScript.CompilingHistory.Last().Value.Result.Errors.Count;
 
             // Results = CSScriptLibrary.CSScript.CompilingHistory.Last().Value.Result;// CSScript.LastCompilingResult.Result;
@@ -323,7 +328,10 @@ namespace EasyCompiler2
         {
             if (FindNameSpace(InstanceToCreate, out string NamespaceName))
             {
-                return $"{NamespaceName}.";
+                if (NamespaceName.Trim() != "")
+                    return $"{NamespaceName}.";
+                else
+                    return "";
             }
             else
                 return "";
@@ -342,7 +350,7 @@ namespace EasyCompiler2
             if ((NS.Equals("*")) && (InstanceToCreate == string.Empty))
                 NS = "";
             else if (NS.Equals("*"))
-                NS = FindNameSpace();
+                NS = $"{FindNameSpace()}";
             else
                 NS = $"{NS}.";
             return $"{NS}{StarOrValue(InstanceToCreate)}.{StarOrValue(MethodToInvoke)}";
@@ -435,6 +443,7 @@ namespace EasyCompiler2
                 Errors.Add(e.Message);
                 return Errors;
             }
+            
         }
         public object Invoke(bool usebuiltinparams)
         {
@@ -458,6 +467,19 @@ namespace EasyCompiler2
                 return Errors;
             }
         }
+        public dynamic LoadCode()
+        {
+            string code = BuildSource();
+            code = code.Replace(" static ", " ");
+            Compile(code);
+            return evaluator.LoadCode(code, ParameterstoPass);
+        }
+        public dynamic CompileCode()
+        {
+            _CompiledAssembly = evaluator.CompileCode(BuildSource());
+            AsmHelper scriptAsm = new AsmHelper(_CompiledAssembly);
+            return scriptAsm.Invoke(BuildInvoker(), ParameterstoPass);
+        }
         public object LaunchCompiledAssembly()
         {
             try
@@ -474,6 +496,7 @@ namespace EasyCompiler2
                         {
                             foundindex = index;
                             found = true;
+                            break;
                         }
                         index++;
                     }
@@ -492,6 +515,7 @@ namespace EasyCompiler2
                             {
                                 foundindex = index;
                                 found = true;
+                                break;
                             }
                         index++;
                     }
