@@ -48,7 +48,7 @@ Any modifications to this code must retain this message.
 namespace EasyCompiler2
 {
 
-    public class EasyCompiler
+    public class Compiler
     {
         
         public IEvaluator evaluator = CSScript.Evaluator;
@@ -85,7 +85,7 @@ namespace EasyCompiler2
                 return ErrorCount == 0;
             }
         }
-        public EasyCompiler()
+        public Compiler()
         {
             CSScript.KeepCompilingHistory = true;
           
@@ -274,21 +274,19 @@ namespace EasyCompiler2
             }
             GetAssemblies();
             //  CompiledAssembly = CSScript.Evaluator.CompileCode(SourcetoCompile);
-
             try
             {
                 _CompiledAssembly = evaluator.CompileCode(SourcetoCompile);
-
             }
-
             catch (CompilerException e)
             {
                 Errors = (List<string>)e.Data["Errors"];
-
                 Errors.Add(SourcetoCompile);
-
             }
-           
+            catch (Exception e)
+            {
+                Errors.Add(e.Message);               
+            }
             //CSScript.CompilingHistory.Last().Value.Result.Errors.Count;
 
             // Results = CSScriptLibrary.CSScript.CompilingHistory.Last().Value.Result;// CSScript.LastCompilingResult.Result;
@@ -301,7 +299,6 @@ namespace EasyCompiler2
             {
                 _CompiledAssembly = CSScript.LoadCode(BuildSource());
                 AsmHelper scriptAsm = new AsmHelper(_CompiledAssembly);
-
                 return scriptAsm.Invoke(NameSpaceClassMethod, list);
             }
             catch (CompilerException e)
@@ -388,10 +385,8 @@ namespace EasyCompiler2
                 foreach (var m in methods)
                 {
                     Console.WriteLine($"Method:{m.Name}");
-                    if (m.Name.Equals(methodname))
-                    {
-                        ClassNames.Add(tp.Name);                       
-                    }
+                    if (m.Name.Equals(methodname))                    
+                        ClassNames.Add(tp.Name);                                
                 }
             }
             return ClassNames.Count > 0;
@@ -442,8 +437,7 @@ namespace EasyCompiler2
             {
                 Errors.Add(e.Message);
                 return Errors;
-            }
-            
+            }            
         }
         public object Invoke(bool usebuiltinparams)
         {
@@ -471,8 +465,10 @@ namespace EasyCompiler2
         {
             string code = BuildSource();
             code = code.Replace(" static ", " ");
-            Compile(code);
-            return evaluator.LoadCode(code, ParameterstoPass);
+            if (Compile(code))
+                return evaluator.LoadCode(code, ParameterstoPass);
+            else
+                return Errors;
         }
         public dynamic CompileCode()
         {

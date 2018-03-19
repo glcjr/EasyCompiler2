@@ -49,7 +49,7 @@ namespace testcompiler
         static void Main(string[] args)
         {
             string sourcestring = "using System;\n using System.Windows.Forms;\n namespace HelloWorld { class Hello { static public int Add(int a, int b) {return a + b;} static public void Main(params string[] Args) { string message = \"\"; if (Args.Length > 0) message = Args[0];Console.WriteLine(\"Hello World \" + message);    if (message.Contains(\"off\")) MessageBox.Show(\"Good Bye\"); Console.WriteLine(\"Press a key\"); Console.ReadKey();      }        }    }";
-            EasyCompiler ec = new EasyCompiler();
+            Compiler ec = new Compiler();
            ec.AddSourceString(sourcestring);
            // ec.UseCodedom();
             ec.MethodToInvoke = "Main";
