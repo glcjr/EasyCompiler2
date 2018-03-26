@@ -62,7 +62,8 @@ namespace EasyCompiler2
         public string Namespace { get; set; } = "";
         public string MethodToInvoke { get; set; } = "";
         public object[] ParameterstoPass { get; set; } = null;
-        
+        public string FileName { get; set; }
+        public bool CreateDll { get; set; }
         public Assembly CompiledAssembly
         {
             get
@@ -263,6 +264,13 @@ namespace EasyCompiler2
             string SourcetoCompile = BuildSource();
             return Compile(SourcetoCompile);
         }
+        public string[] GetAssemblyNames(Assembly[] assems)
+        {
+            List<string> Names = new List<string>();
+            foreach (var assem in assems)
+                Names.Add(assem.FullName);
+            return Names.ToArray<string>();
+        }
         public bool Compile(string SourcetoCompile)
         {
             if (UseExplictIncludeofReferences)
@@ -277,6 +285,14 @@ namespace EasyCompiler2
             try
             {
                 _CompiledAssembly = evaluator.CompileCode(SourcetoCompile);
+                string result;
+                if (CreateDll)
+                {
+                    if (FileName == string.Empty)
+                        FileName = $"{Path.GetTempFileName()}.dll";
+                    result = CSScript.CompileFile(SourcetoCompile, FileName, false, GetAssemblyNames(evaluator.GetReferencedAssemblies()));
+                }
+                    
             }
             catch (CompilerException e)
             {
